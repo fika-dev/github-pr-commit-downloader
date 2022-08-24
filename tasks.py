@@ -51,6 +51,16 @@ def parse_commits_from_pr(driver: WebDriver, owner: str, repo: str, pr_number: s
   return commits
 
 def get_pr_list(github: Github, owner: str, repo: str):
+  def _parse_pr(data):
+    return {
+      'url': data['url'],
+      'issue_url': data['issue_url'],
+      'merged_at': data['merged_at'],
+      'merge_commit_sha': data['merge_commit_sha'],
+      'user': data['user']['html_url'],
+      'labels': ', '.join(data['labels']),
+      'base': data['base']['ref'],
+    }
   pr_remained = True
   total_pr = []
   pr_page_idx = 1
@@ -63,7 +73,10 @@ def get_pr_list(github: Github, owner: str, repo: str):
     if (len(pr_list) == 0):
       pr_remained = False
     else:
+      pr_list = [_parse_pr(pr) for pr in pr_list]
       total_pr = total_pr + pr_list
       pr_page_idx+=1
       print(f'total pr length: {len(total_pr)}')
   return total_pr
+
+
