@@ -1,4 +1,5 @@
 import requests
+from time import time
 from github import Github
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions
@@ -6,10 +7,31 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
 from bs4 import BeautifulSoup
+import pickle
 
-def parse_commits_from_pr_using_api(github: Github,owner: str, repo: str, pr_number: str) -> list:
+
+def save_ckpt(repo_index: int, pr_index: int):
+    print(f"Saving checkpoint {repo_index, pr_index}...")
+    with open('repo_ckpt.pkl', 'wb') as f:
+        pickle.dump((repo_index, pr_index), f)
+
+def parse_commits_from_pr_using_api(github: Github,owner: str, repo: str, pr_number: str, repo_idx: int, pr_idx: int) -> list:
   def _get(url: str):
-    return github.request(f'https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/commits').json()
+    r = github.request(f'https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/commits')
+    if r.status_code == 403:
+      print('API rate limit exceeded.')
+      save_ckpt(repo_idx, pr_idx)
+      print('Exiting program.')
+      exit()
+    try:
+      assert r.status_code == 200
+    except:
+      print(f'Unexpected status code. Status code returned is {r.status_code}')
+      print(r.text)
+      save_ckpt(repo_idx, pr_idx)
+      print("Exiting program.")
+      exit()
+    return r.json()
 
   def _parse_commit(commit: dict, repo: str, pr_number: str):
     commit_url: str =  commit['html_url']
