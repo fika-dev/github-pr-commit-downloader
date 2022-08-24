@@ -1,9 +1,13 @@
+import requests
+from github import Github
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
-import requests
+
+
+
 
 
 def parse_commits_from_pr(driver: WebDriver, owner: str, repo: str, pr_number: str) -> list:
@@ -46,3 +50,20 @@ def parse_commits_from_pr(driver: WebDriver, owner: str, repo: str, pr_number: s
   commits = [_parse_commit(elm, f'{owner}/{repo}', pr_number) for elm in commit_elements]
   return commits
 
+def get_pr_list(github: Github, owner: str, repo: str):
+  pr_remained = True
+  total_pr = []
+  pr_page_idx = 1
+  while pr_remained:
+    pr_list: list = github.request(f'https://api.github.com/repos/{owner}/{repo}/pulls', {
+      'per_page': 100,
+      'state': 'all',
+      'page': pr_page_idx,
+    }).json()    
+    if (len(pr_list) == 0):
+      pr_remained = False
+    else:
+      total_pr = total_pr + pr_list
+      pr_page_idx+=1
+      print(f'total pr length: {len(total_pr)}')
+  return total_pr
