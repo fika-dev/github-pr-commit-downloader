@@ -26,7 +26,7 @@ for i in  range(loader.repo_length):
     repo = loader.get(i)
     [owner, repo] = repo['name'].split('/')
     pr_list = get_pr_list(github, owner, repo)
-    for pr_i, pr in tqdm(enumerate(pr_list)):
+    for pr_i, pr in tqdm(enumerate(pr_list), total=len(pr_list)):
       if (pr_i > pr_idx):
         pr_saver.add(pr)
         commits = parse_commits_from_pr_using_api(github, owner, repo, pr['number'], i, pr_i)
