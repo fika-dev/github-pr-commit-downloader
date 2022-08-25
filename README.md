@@ -1,6 +1,6 @@
 # github pr & commit crawler
 
-### version 1
+### Data version 1
 
 data/repos_typescript_starts_100_pr_commit_limit.json:
 
@@ -10,3 +10,9 @@ data/repos_typescript_starts_100_pr_commit_limit.json:
 - language Typescript
   from https://seart-ghs.si.usi.ch/
   when [2022-08-24 04:16]
+
+## How to start
+create .env file and add your github access token as GH_TOKEN
+`GH_TOKEN=[token]`
+then run
+`python main.py`
